@@ -2,7 +2,8 @@
 
 class IndustryFacility(object):
 
-    def __init__(self, name, solar_system, tax_rate, material_bonus=0, time_bonus=0):
+    def __init__(self, name, solar_system, tax_rate, material_bonus=0,
+                 time_bonus=0):
         self.name = name
         self._tax_rate = tax_rate
         self._solar_system = solar_system
