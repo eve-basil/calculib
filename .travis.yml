@@ -1,10 +1,14 @@
 language: python
 
+services:
+  - redis-server
+
 cache:
   directories:
   - $HOME/.cache/pip
 
 install:
+  - 'pip install git+https://github.com/eve-basil/common.git'
   - 'pip install -r requirements.txt'
   - 'pip install -r test-requirements.txt'
 
@@ -12,6 +16,10 @@ script:
   - 'flake8 basil_refapi'
   - 'python basil_refapi/migrate.py'
   - 'py.test tests'
+
+env:
+  global:
+    - REDIS_HOST=localhost
 
 matrix:
   include:
