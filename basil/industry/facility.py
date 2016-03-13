@@ -1,14 +1,13 @@
-
-
 class IndustryFacility(object):
 
     def __init__(self, name, solar_system, tax_rate, material_bonus=0,
-                 time_bonus=0):
+                 time_bonus=0, details=None):
         self.name = name
         self._tax_rate = tax_rate
         self._solar_system = solar_system
         self._material_bonus = material_bonus
         self._time_bonus = time_bonus
+        self.details = details
 
     @property
     def manufacture_index(self):
@@ -62,7 +61,7 @@ class EquipmentAssemblyArray(IndustryFacility):
     rapid equipment assembly array but at a reduced speed.
     """
     def __init__(self, name, system):
-        super(EquipmentAssemblyArray, self).__init__(name, system, 0, 25, 2)
+        super(EquipmentAssemblyArray, self).__init__(name, system, 0, 2, 25)
 
     def can_build(self, product):
         return False
@@ -176,14 +175,15 @@ class ThukkerComponentAssemblyArray(IndustryFacility):
 
     def __init__(self, name, system):
         super(ThukkerComponentAssemblyArray, self).__init__(name, system, 0,
-                                                            2, 15)
+                                                            25, 15)
 
 
 class NPCStation(IndustryFacility):
     def __init__(self, name, system):
-        super(NPCStation, self).__init__(name, system, 10, 2, 15)
+        super(NPCStation, self).__init__(name, system, 10, 0, 0)
 
 
 class Outpost(IndustryFacility):
-    def __init__(self, name, system, tax_rate):
-        super(Outpost, self).__init__(name, system, tax_rate, 2, 15)
+    def __init__(self, name, system, tax_rate, me_bonus, te_bonus):
+        super(Outpost, self).__init__(name, system, tax_rate, me_bonus,
+                                      te_bonus)

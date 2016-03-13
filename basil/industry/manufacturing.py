@@ -3,6 +3,30 @@ import operator
 from basil.calculator import manufacturing as calc
 
 
+def me_bonuses(blueprint, facility=None):
+    bonuses = [blueprint['me']]
+    if facility:
+        bonuses.append(facility.material_bonus)
+    return sorted([b for b in bonuses if b > 0], reverse=True)
+
+
+def te_bonuses(blueprint, facility=None, builder=None):
+    bonuses = [blueprint['te']]
+    if facility:
+        bonuses.append(facility.time_bonus)
+    if builder:
+        if 'skills' in builder:
+            skills = builder['skills']
+            bonuses.append(skills.get(3380, 0) * 4)  # Industry
+            bonuses.append(skills.get(3388, 0) * 3)  # Advanced Industry
+        if 'implants' in builder:
+            implants = builder['implants']
+            bonuses.append(implants.get(27170, 0) * 1)  # BX-801
+            bonuses.append(implants.get(27167, 0) * 2)  # BX-802
+            bonuses.append(implants.get(27171, 0) * 4)  # BX-804
+    return sorted([b for b in bonuses if b > 0], reverse=True)
+
+
 class ManufactureMaterial(object):
     def __init__(self, type_id, name, quantity, cost=None):
         self._id = type_id
