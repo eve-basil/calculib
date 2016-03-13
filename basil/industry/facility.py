@@ -1,3 +1,21 @@
+import requests
+
+
+def facilities():
+    url = 'https://public-crest.eveonline.com/industry/facilities/'
+    return _items_from_url(url)
+
+
+def systems():
+    url = 'https://public-crest.eveonline.com/industry/systems/'
+    return _items_from_url(url)
+
+
+def _items_from_url(url):
+    headers = {'user-agent': 'github.com_eve-basil/calculib_0.1.0-dev'}
+    return requests.get(url, headers=headers).json()['items']
+
+
 class IndustryFacility(object):
 
     def __init__(self, name, solar_system, tax_rate, material_bonus=0,
