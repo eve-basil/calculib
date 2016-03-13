@@ -7,6 +7,7 @@ import basil.calculator.manufacturing as m
 
 
 def test_calc_mats():
+    assert_that(m.calc_mats(1, 12345, []), equal_to(12345))
     assert_that(m.calc_mats(1, 12345, 0), equal_to(12345))
     assert_that(m.calc_mats(1, 716, 9), equal_to(652))
     assert_that(m.calc_mats(3, 2250, -5), equal_to(7088))
@@ -15,7 +16,8 @@ def test_calc_mats():
 
 
 def test_calc_time():
-    assert_that(equal_to(12000), m.calc_time(1, 12000, 0))
+    assert_that(m.calc_time(1, 12000, []), equal_to(12000))
+    assert_that(m.calc_time(1, 12000, 0), equal_to(12000))
 
     duration = timedelta(seconds=m.calc_time(3, 240000, [18, 35, 5, 25, 4]))
     assert_that(equal_to('3 days, 0:54:52'), str(duration))
