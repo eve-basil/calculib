@@ -13,8 +13,7 @@ install:
   - 'pip install -r test-requirements.txt'
 
 script:
-  - 'flake8 basil_refapi'
-  - 'python basil_refapi/migrate.py'
+  - 'flake8 basil'
   - 'py.test tests'
 
 env:
