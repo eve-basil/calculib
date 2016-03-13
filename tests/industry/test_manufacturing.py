@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from tests.support import *
+from tests import *
 
 import basil.industry.manufacturing as m
 from basil.industry.manufacturing import BillOfMaterials

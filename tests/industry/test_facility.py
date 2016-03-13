@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import pytest
 
-from tests.support import *
+from tests import *
 
 import basil.industry.facility as f
 

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from datetime import timedelta
 
-from tests.support import *
+from tests import *
 
 import basil.calculator.manufacturing as m
 
