@@ -9,7 +9,7 @@ from basil.industry.manufacturing import BillOfMaterials
 
 def test_me_blueprint_bonuses():
     assert_that(m.me_bonuses({'me': 0}), equal_to([]))
-    for x in range(1-11):
+    for x in range(1, 11):
         assert_that(m.me_bonuses({'me': x}), equal_to([x]))
 
 

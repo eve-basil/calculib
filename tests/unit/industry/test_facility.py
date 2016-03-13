@@ -49,4 +49,3 @@ def test_material_research_index(system):
 def test_time_research_index(system):
     fac = f.IndustryFacility('test', system, 0)
     assert_that(fac, has_property('time_research_index', equal_to(0.004)))
-
