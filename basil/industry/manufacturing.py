@@ -4,6 +4,13 @@ from basil.calculator import manufacturing as calc
 
 
 def me_bonuses(blueprint, facility=None):
+    """Collect Material Efficiency bonuses.
+
+    :param blueprint: dict representing the blueprint to be built
+    :param facility: IndustrialFacility representation the build location
+    :return: a sorted list of modifiers
+    """
+    # TODO some decryptors will break this, as ME penalties are filtered out
     bonuses = [blueprint['me']]
     if facility:
         bonuses.append(facility.material_bonus)
@@ -11,6 +18,14 @@ def me_bonuses(blueprint, facility=None):
 
 
 def te_bonuses(blueprint, facility=None, builder=None):
+    """Collect Time Efficiency bonuses.
+
+    :param blueprint: dict representing the blueprint to be built
+    :param facility: IndustrialFacility representation the build location
+    :param builder: dict characterizing the builder's skills and implants
+    :return: a sorted list of modifiers
+    """
+    # TODO some decryptors may break this, as TE penalties are filtered out
     bonuses = [blueprint['te']]
     if facility:
         bonuses.append(facility.time_bonus)
@@ -28,6 +43,8 @@ def te_bonuses(blueprint, facility=None, builder=None):
 
 
 class ManufactureMaterial(object):
+    """A spec for a single Material in a Manufacturing process
+    """
     def __init__(self, type_id, name, quantity, cost=None):
         self._id = type_id
         self._name = name
@@ -52,10 +69,13 @@ class ManufactureMaterial(object):
 
 
 class BillOfMaterials(object):
+    """Collection of ManufactureMaterials required for a process
+    """
     def __init__(self, materials):
         self._materials = self.flatten_materials(materials)
 
     def __iter__(self):
+        # TODO I don't think this works, fix it
         n = 0
         while n < len(self._materials):
             yield self._materials[n]
