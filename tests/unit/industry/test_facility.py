@@ -11,16 +11,16 @@ import basil.industry.facility as f
 def system():
     url = "https://public-crest.eveonline.com/solarsystems/30002054/"
     return {"systemCostIndices":
-                [{"costIndex": 0.001, "activityID": 8, "activityID_str": "8",
-                  "activityName": "Invention"},
-                 {"costIndex": 0.005, "activityID": 1, "activityID_str": "1",
-                  "activityName": "Manufacturing"},
-                 {"costIndex": 0.004, "activityID": 3, "activityID_str": "3",
-                  "activityName": "Researching Time Efficiency"},
-                 {"costIndex": 0.003, "activityID": 4, "activityID_str": "4",
-                  "activityName": "Researching Material Efficiency"},
-                 {"costIndex": 0.002, "activityID": 5, "activityID_str": "5",
-                  "activityName": "Copying"}],
+            [{"costIndex": 0.001, "activityID": 8, "activityID_str": "8",
+              "activityName": "Invention"},
+             {"costIndex": 0.005, "activityID": 1, "activityID_str": "1",
+              "activityName": "Manufacturing"},
+             {"costIndex": 0.004, "activityID": 3, "activityID_str": "3",
+              "activityName": "Researching Time Efficiency"},
+             {"costIndex": 0.003, "activityID": 4, "activityID_str": "4",
+              "activityName": "Researching Material Efficiency"},
+             {"costIndex": 0.002, "activityID": 5, "activityID_str": "5",
+              "activityName": "Copying"}],
             "solarSystem":
                 {"id_str": "30002054", "href": url, "id": 30002054,
                  "name": "Hror"}}

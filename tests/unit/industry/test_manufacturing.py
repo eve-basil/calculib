@@ -71,9 +71,9 @@ def test_te_bonuses_thukker_component_assembly_array():
 def test_te_bonuses_unskilled_builder():
     fac = f.ThukkerComponentAssemblyArray(None, None)
     bldr = {'skills': {}, 'implants': {}}
-    assert_that(m.te_bonuses({'te': 2}, fac, ), equal_to([15, 2]))
-    assert_that(m.te_bonuses({'te': 6}, fac), equal_to([15, 6]))
-    assert_that(m.te_bonuses({'te': 16}, fac), equal_to([16, 15]))
+    assert_that(m.te_bonuses({'te': 2}, fac, bldr), equal_to([15, 2]))
+    assert_that(m.te_bonuses({'te': 6}, fac, bldr), equal_to([15, 6]))
+    assert_that(m.te_bonuses({'te': 16}, fac, bldr), equal_to([16, 15]))
 
 
 def test_te_bonuses_midskilled_builder():

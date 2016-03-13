@@ -68,10 +68,11 @@ def has_method(name, match=None):
             return self.value_matcher.matches(value)
 
         def describe_to(self, description):
-            description.append_text("an object with a method '") \
-                                            .append_text(self.method_name) \
-                                            .append_text("' matching ") \
-                                            .append_description_of(self.value_matcher)
+            (description
+                .append_text("an object with a method '")
+                .append_text(self.method_name)
+                .append_text("' matching ")
+                .append_description_of(self.value_matcher))
 
         def describe_mismatch(self, item, mismatch_description):
             if item is None:
@@ -79,13 +80,14 @@ def has_method(name, match=None):
                 return
 
             if not hasattr(item, self.method_name):
-                mismatch_description.append_value(item) \
-                                                        .append_text(' did not have the ') \
-                                                        .append_value(self.method_name) \
-                                                        .append_text(' method')
+                (mismatch_description.append_value(item)
+                    .append_text(' did not have the ')
+                    .append_value(self.method_name)
+                    .append_text(' method'))
                 return
 
-            mismatch_description.append_text('method ').append_value(self.method_name).append_text(' ')
+            (mismatch_description.append_text('method ')
+                .append_value(self.method_name).append_text(' '))
             method = getattr(item, self.method_name)
             value = method()
             self.value_matcher.describe_mismatch(value(), mismatch_description)
