@@ -1,5 +1,7 @@
 import requests
 
+import basil_common.caching as cache
+
 
 def facilities():
     url = 'https://public-crest.eveonline.com/industry/facilities/'
@@ -12,8 +14,49 @@ def systems():
 
 
 def _items_from_url(url):
-    headers = {'user-agent': 'github.com_eve-basil/calculib_0.1.0-dev'}
+    headers = {'user-agent': 'github.com/eve-basil/calculib[0.1.0-dev]'}
     return requests.get(url, headers=headers).json()['items']
+
+FAC_CACHE = cache.FactCache(cache.ENGINE, 'fac', facilities)
+SYS_CACHE = cache.FactCache(cache.ENGINE, 'sys', systems)
+
+
+def facility(facility_id=None, **kwargs):
+    """Provide an IndustrialFacility based on parameters.
+
+    If facility_id is provided, only me_bonus and te_bonus args are used.
+    Otherwise a dict containing all the parameters necessary to completely
+    specify the facility are required, and some additional, optional, values
+    may be given as well (name, description).
+
+    :param facility_id: optional id
+    :param kwargs: other args used to define the facility
+    :return: an IndustrialFacility
+    """
+    global FAC_CACHE
+    global SYS_CACHE
+
+    def _facility_from_id():
+        fac = FAC_CACHE[facility_id]
+        system = SYS_CACHE.get(fac['solarSystem']['id'])
+        if 'tax' in fac and fac['tax'] == 0.1:
+            return NPCStation(fac['name'], system)
+        else:
+            if 'tax' in fac:
+                tax_rate = fac['tax'] * 100
+            else:
+                tax_rate = 0
+            return Outpost(fac.get('name', None), system, tax_rate,
+                           me_bonus=kwargs.pop('me_bonus', 0),
+                           te_bonus=kwargs.pop('te_bonus', 0))
+
+    def _facility_from_dict(**kwargs):
+        pass
+
+    if facility_id:
+        return _facility_from_id()
+    else:
+        return _facility_from_dict(**kwargs)
 
 
 class IndustryFacility(object):
@@ -202,6 +245,6 @@ class NPCStation(IndustryFacility):
 
 
 class Outpost(IndustryFacility):
-    def __init__(self, name, system, tax_rate, me_bonus, te_bonus):
+    def __init__(self, name, system, tax_rate, me_bonus=0, te_bonus=0):
         super(Outpost, self).__init__(name, system, tax_rate, me_bonus,
                                       te_bonus)
