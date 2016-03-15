@@ -17,6 +17,7 @@ def _items_from_url(url):
     headers = {'user-agent': 'github.com/eve-basil/calculib[0.1.0-dev]'}
     return requests.get(url, headers=headers).json()['items']
 
+
 FAC_CACHE = cache.FactCache(cache.ENGINE, 'fac', facilities)
 SYS_CACHE = cache.FactCache(cache.ENGINE, 'sys', systems)
 
@@ -36,7 +37,7 @@ def facility(facility_id=None, **kwargs):
     global FAC_CACHE
     global SYS_CACHE
 
-    def _facility_from_id():
+    def _facility_from_id(**ikwargs):
         fac = FAC_CACHE[facility_id]
         system = SYS_CACHE.get(fac['solarSystem']['id'])
         if 'tax' in fac and fac['tax'] == 0.1:
@@ -47,28 +48,38 @@ def facility(facility_id=None, **kwargs):
             else:
                 tax_rate = 0
             return Outpost(fac.get('name', None), system, tax_rate,
-                           me_bonus=kwargs.pop('me_bonus', 0),
-                           te_bonus=kwargs.pop('te_bonus', 0))
+                           me_bonus=ikwargs.pop('me_bonus', 0),
+                           te_bonus=ikwargs.pop('te_bonus', 0))
 
-    def _facility_from_dict(**kwargs):
-        pass
+    def _facility_from_dict(**ikwargs):
+
+        structure = globals()[ikwargs.pop('structure')]
+        system = SYS_CACHE.get(ikwargs.pop('solar_system_id'))
+        params = {'solar_system': system}
+        for p in _constructor_params(structure):
+            if p not in params:
+                params[p] = ikwargs.pop(p, None)
+        return structure(**params)
+
+    def _constructor_params(clas):
+        import inspect
+        return [x for x in inspect.getargspec(clas.__init__)[0]
+                if x != 'self']
 
     if facility_id:
-        return _facility_from_id()
+        return _facility_from_id(**kwargs)
     else:
         return _facility_from_dict(**kwargs)
 
 
 class IndustryFacility(object):
-
     def __init__(self, name, solar_system, tax_rate, material_bonus=0,
-                 time_bonus=0, details=None):
+                 time_bonus=0):
         self.name = name
         self._tax_rate = tax_rate
         self._solar_system = solar_system
         self._material_bonus = material_bonus
         self._time_bonus = time_bonus
-        self.details = details
 
     @property
     def manufacture_index(self):
@@ -121,8 +132,10 @@ class EquipmentAssemblyArray(IndustryFacility):
     structures and containers can be manufactured more efficiently than the
     rapid equipment assembly array but at a reduced speed.
     """
-    def __init__(self, name, system):
-        super(EquipmentAssemblyArray, self).__init__(name, system, 0, 2, 25)
+
+    def __init__(self, name, solar_system):
+        super(EquipmentAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
     def can_build(self, product):
         return False
@@ -132,8 +145,10 @@ class SmallShipAssemblyArray(IndustryFacility):
     """A mobile assembly facility where smaller ships such as Fighter and
     Fighter Bomber Drones, Frigates and Destroyers can be manufactured.
     """
-    def __init__(self, name, system):
-        super(SmallShipAssemblyArray, self).__init__(name, system, 0, 2, 25)
+
+    def __init__(self, name, solar_system):
+        super(SmallShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class AdvancedSmallShipAssemblyArray(IndustryFacility):
@@ -141,17 +156,20 @@ class AdvancedSmallShipAssemblyArray(IndustryFacility):
     Frigates, Covert Ops Frigates, Electronic Attack Frigates, Interceptors,
     Interdictors, Stealth Bombers and Tactical Destroyers can be manufactured.
     """
-    def __init__(self, name, system):
-        super(AdvancedSmallShipAssemblyArray, self).__init__(name, system, 0,
-                                                             2, 25)
+
+    def __init__(self, name, solar_system):
+        super(AdvancedSmallShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class MediumShipAssemblyArray(IndustryFacility):
     """A mobile assembly facility where medium sized ships such as Cruisers
     and Battlecruisers can be manufactured.
     """
-    def __init__(self, name, system):
-        super(MediumShipAssemblyArray, self).__init__(name, system, 0, 2, 25)
+
+    def __init__(self, name, solar_system):
+        super(MediumShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class AdvancedMediumShipAssemblyArray(IndustryFacility):
@@ -159,9 +177,10 @@ class AdvancedMediumShipAssemblyArray(IndustryFacility):
     Logistics Cruisers, Heavy Assault Cruisers, Recon Cruisers, Heavy
     Interdiction Cruisers and Command Battlecruisers can be manufactured.
     """
-    def __init__(self, name, system):
-        super(AdvancedMediumShipAssemblyArray, self).__init__(name, system, 0,
-                                                              2, 25)
+
+    def __init__(self, name, solar_system):
+        super(AdvancedMediumShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class LargeShipAssemblyArray(IndustryFacility):
@@ -169,8 +188,9 @@ class LargeShipAssemblyArray(IndustryFacility):
     Freighters and Industrial Command Ships can be manufactured.
     """
 
-    def __init__(self, name, system):
-        super(LargeShipAssemblyArray, self).__init__(name, system, 0, 2, 25)
+    def __init__(self, name, solar_system):
+        super(LargeShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class AdvancedLargeShipAssemblyArray(IndustryFacility):
@@ -178,9 +198,10 @@ class AdvancedLargeShipAssemblyArray(IndustryFacility):
     Ops, Marauder class battleships as well as Jump Freighters can be
     manufactured.
     """
-    def __init__(self, name, system):
-        super(AdvancedLargeShipAssemblyArray, self).__init__(name, system, 0,
-                                                             2, 25)
+
+    def __init__(self, name, solar_system):
+        super(AdvancedLargeShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class CapitalShipAssemblyArray(IndustryFacility):
@@ -188,8 +209,10 @@ class CapitalShipAssemblyArray(IndustryFacility):
     Carriers, Dreadnoughts, Freighters, Industrial Command Ships and Capital
     Industrial Ships can be manufactured.
     """
-    def __init__(self, name, system):
-        super(CapitalShipAssemblyArray, self).__init__(name, system, 0, 2, 25)
+
+    def __init__(self, name, solar_system):
+        super(CapitalShipAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class AmmunitionAssemblyArray(IndustryFacility):
@@ -200,8 +223,9 @@ class AmmunitionAssemblyArray(IndustryFacility):
     Fuel Blocks can also be manufactured here.
     """
 
-    def __init__(self, name, system):
-        super(AmmunitionAssemblyArray, self).__init__(name, system, 0, 2, 25)
+    def __init__(self, name, solar_system):
+        super(AmmunitionAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class DroneAssemblyArray(IndustryFacility):
@@ -209,8 +233,9 @@ class DroneAssemblyArray(IndustryFacility):
     manufactured.
     """
 
-    def __init__(self, name, system):
-        super(DroneAssemblyArray, self).__init__(name, system, 0, 2, 25)
+    def __init__(self, name, solar_system):
+        super(DroneAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class ComponentAssemblyArray(IndustryFacility):
@@ -221,8 +246,9 @@ class ComponentAssemblyArray(IndustryFacility):
     Fuel Blocks can also be manufactured here.
     """
 
-    def __init__(self, name, system):
-        super(ComponentAssemblyArray, self).__init__(name, system, 0, 2, 25)
+    def __init__(self, name, solar_system):
+        super(ComponentAssemblyArray, self).__init__(
+            name, solar_system, 0, 2, 25)
 
 
 class ThukkerComponentAssemblyArray(IndustryFacility):
@@ -234,17 +260,17 @@ class ThukkerComponentAssemblyArray(IndustryFacility):
     space.
     """
 
-    def __init__(self, name, system):
-        super(ThukkerComponentAssemblyArray, self).__init__(name, system, 0,
-                                                            25, 15)
+    def __init__(self, name, solar_system):
+        super(ThukkerComponentAssemblyArray, self).__init__(
+            name, solar_system, 0, 25, 15)
 
 
 class NPCStation(IndustryFacility):
-    def __init__(self, name, system):
-        super(NPCStation, self).__init__(name, system, 10, 0, 0)
+    def __init__(self, name, solar_system):
+        super(NPCStation, self).__init__(name, solar_system, 10, 0, 0)
 
 
 class Outpost(IndustryFacility):
-    def __init__(self, name, system, tax_rate, me_bonus=0, te_bonus=0):
-        super(Outpost, self).__init__(name, system, tax_rate, me_bonus,
+    def __init__(self, name, solar_system, tax_rate, me_bonus=0, te_bonus=0):
+        super(Outpost, self).__init__(name, solar_system, tax_rate, me_bonus,
                                       te_bonus)

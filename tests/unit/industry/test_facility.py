@@ -52,7 +52,7 @@ def test_time_research_index(system):
 
 
 def test_facility_by_id_npc_station():
-    with MockCaches():
+    with MockCaches(NPC_STATION):
         fac = f.facility(60002353)
         assert_that(fac, instance_of(f.NPCStation))
         assert_that(fac, has_property('tax_rate', equal_to(10)))
@@ -78,7 +78,33 @@ def test_facility_by_id_outpost():
 
 
 def test_facility_by_dict():
-    pass
+    args = {'structure': 'EquipmentAssemblyArray', 'solar_system_id': 30000181}
+    with MockCaches(NPC_STATION):
+        fac = f.facility(None, **args)
+        assert_that(fac, instance_of(f.EquipmentAssemblyArray))
+        assert_that(fac, has_property('tax_rate', equal_to(0)))
+        assert_that(fac, has_property('material_bonus', equal_to(2)))
+        assert_that(fac, has_property('time_bonus', equal_to(25)))
+        assert_that(fac, has_property('manufacture_index',
+                                      equal_to(0.031129044234844177)))
+        assert_that(fac, has_property('invention_index',
+                                      equal_to(0.07374034740779398)))
+
+
+def test_facility_by_dict_with_name():
+    args = {'structure': 'EquipmentAssemblyArray',
+            'solar_system_id': 30000181, 'name': 'TTP'}
+    with MockCaches(NPC_STATION):
+        fac = f.facility(None, **args)
+        assert_that(fac, instance_of(f.EquipmentAssemblyArray))
+        assert_that(fac, has_property('name', equal_to('TTP')))
+        assert_that(fac, has_property('tax_rate', equal_to(0)))
+        assert_that(fac, has_property('material_bonus', equal_to(2)))
+        assert_that(fac, has_property('time_bonus', equal_to(25)))
+        assert_that(fac, has_property('manufacture_index',
+                                      equal_to(0.031129044234844177)))
+        assert_that(fac, has_property('invention_index',
+                                      equal_to(0.07374034740779398)))
 
 
 class MockCaches(object):
