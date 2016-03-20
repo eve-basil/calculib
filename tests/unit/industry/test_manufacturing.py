@@ -135,4 +135,4 @@ def test_total_cost():
     mats = [m.ManufactureMaterial(12, "egg", 10, n) for n in range(0, 4)]
     result = BillOfMaterials(mats)
 
-    assert_that(result.total_cost(), equal_to(60))
+    assert_that(result.total_cost, equal_to(60))

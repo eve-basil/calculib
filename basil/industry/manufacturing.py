@@ -75,17 +75,11 @@ class BillOfMaterials(object):
         self._materials = self.flatten_materials(materials)
 
     def __iter__(self):
-        # TODO I don't think this works, fix it
-        n = 0
-        while n < len(self._materials):
-            yield self._materials[n]
-            n += 1
+        return iter(self._materials)
 
+    @property
     def total_cost(self):
-        cost = 0.0
-        for mat in self:
-            cost += mat.quantity * mat.cost
-        return cost
+        return sum(mat.quantity * mat.cost for mat in self)
 
     @staticmethod
     def flatten_materials(materials):
@@ -115,14 +109,13 @@ class BillOfMaterials(object):
 
 class ManufactureJob(object):
     def __init__(self, runs, recipe, me_bonuses=None, te_bonuses=None,
-                 install_factors=None, description=None):
+                 install_factors=None):
         self._product = recipe['products'][0]['name']
         self._runs = runs
         self._units_per_run = recipe['products'][0]['quantity']
         self._me_bonuses = me_bonuses or []
         self._te_bonuses = te_bonuses or []
         self._in_factors = install_factors  # dict: system_index, tax_rate
-        self._description = description
         self._duration = calc.calc_time(runs, recipe['time'], te_bonuses)
         self._materials = self._make_bill(recipe, runs, me_bonuses)
         # TODO TODO TODO
@@ -131,10 +124,6 @@ class ManufactureJob(object):
     @property
     def runs(self):
         return self._runs
-
-    @property
-    def description(self):
-        return self._description
 
     @property
     def duration(self):
