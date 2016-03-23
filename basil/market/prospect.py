@@ -1,20 +1,17 @@
 from operator import attrgetter
 
 import basil.market as market
-import basil.calculator.manufacturing as cmat
 import basil.industry.manufacturing as imat
 
 
-def prospect(blueprint, facilities):
+def prospect(blueprint, facilities, runs=1):
     """Analyze Prospects for an industrial manufacturing job.
 
     :param blueprint: a blueprint to build from
-    :param facilities: list of IndustryFacilitys to evaluate
-    :param prices: dictionary of prices for all materials and product(s) by
-           typeID
+    :param facilities: list of IndustryFacilities to evaluate
+    :param runs: number of runs to calculate the prospect on
     :return: a list of Prospects, sorted from in order of decreasing profit
     """
-    raw_mats = blueprint['materials']
     product = blueprint['products'][0]['typeID']
     product_value = market.VALUES_FUNC(product)
     sell = market.PRICES_FUNC(product)
@@ -22,38 +19,56 @@ def prospect(blueprint, facilities):
 
     prospects = []
     for fac in facilities:
-        bonuses = imat.me_bonuses(blueprint, fac)
-        mats = _required_material(raw_mats, bonuses)
-        index = fac.manufacture_index
-        install = cmat.calc_install(1, product_value, index, fac.tax_rate)
-        prospects.append(Prospect(blueprint, fac, mats[1], install, sell))
+        job = imat.ManufactureJob(runs, blueprint, fac, product_value)
+        prospects.append(Prospect(job, sell))
     return sorted(prospects, key=attrgetter('cost_per_unit'))
 
 
-def _required_material(raw_mats, bonuses):
-    final_mats = []
-    init_mats = []
-    for m in raw_mats:
-        mat_name = market.NAMES_FUNC(m['typeID'])
-        mat_price = market.PRICES_FUNC(m['typeID'])['sell']['min']
-        qty_used = cmat.calc_mats(1, m['quantity'], bonuses)
-        final_mats.append(imat.ManufactureMaterial(m['typeID'], mat_name,
-                                                   qty_used, mat_price))
-        init_mats.append(imat.ManufactureMaterial(m['typeID'], mat_name,
-                                                  m['quantity'], mat_price))
-    return imat.BillOfMaterials(init_mats), imat.BillOfMaterials(final_mats)
-
-
 class Prospect(object):
-    def __init__(self, blueprint, facility, mats, install_cost, sell_price):
-        self.blueprint = blueprint
-        self.facility = facility
-        self.bill_of_materials = mats
-        self.install_cost = install_cost
+    def __init__(self, manufacture_job, sell_price):
+        self._build_job = manufacture_job
         self.price_per_unit = sell_price
 
     @property
+    def facility(self):
+        return self._build_job.facility
+
+    @property
+    def units_per_run(self):
+        return self._build_job.units_per_run
+
+    @property
+    def runs(self):
+        return self._build_job.runs
+
+    @property
+    def total_cost(self):
+        return self._build_job.total_cost
+
+    @property
     def cost_per_unit(self):
-        units_per_run = self.blueprint['products'][0]['quantity']
-        return float(self.bill_of_materials.total_cost +
-                     self.install_cost) / units_per_run
+        return float(self.total_cost) / self.units_per_run
+
+    @property
+    def profit_per_unit(self):
+        return self.price_per_unit - self.cost_per_unit
+
+    @property
+    def profit_per_run(self):
+        return self.profit_per_unit * self.units_per_run
+
+    @property
+    def revenue_per_run(self):
+        return self.price_per_unit * self.units_per_run
+
+    @property
+    def total_revenue(self):
+        return self.revenue_per_run * self.runs
+
+    @property
+    def total_profit(self):
+        return self.profit_per_run * self.runs
+
+    @property
+    def profit_margin(self):
+        return 100 * self.total_profit / self.total_cost

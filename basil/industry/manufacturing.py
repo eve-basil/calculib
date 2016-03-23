@@ -1,6 +1,7 @@
 import operator
 
 from basil.calculator import manufacturing as calc
+import basil.market as market
 
 
 def me_bonuses(blueprint, facility=None):
@@ -40,6 +41,20 @@ def te_bonuses(blueprint, facility=None, builder=None):
             bonuses.append(implants.get(27167, 0) * 2)  # BX-802
             bonuses.append(implants.get(27171, 0) * 4)  # BX-804
     return sorted([b for b in bonuses if b > 0], reverse=True)
+
+
+def required_material(raw_mats, bonuses):
+    final_mats = []
+    init_mats = []
+    for m in raw_mats:
+        mat_name = market.NAMES_FUNC(m['typeID'])
+        mat_price = market.PRICES_FUNC(m['typeID'])['sell']['min']
+        qty_used = calc.calc_mats(1, m['quantity'], bonuses)
+        final_mats.append(ManufactureMaterial(m['typeID'], mat_name,
+                                              qty_used, mat_price))
+        init_mats.append(ManufactureMaterial(m['typeID'], mat_name,
+                                             m['quantity'], mat_price))
+    return BillOfMaterials(init_mats), BillOfMaterials(final_mats)
 
 
 class ManufactureMaterial(object):
@@ -108,45 +123,42 @@ class BillOfMaterials(object):
 
 
 class ManufactureJob(object):
-    def __init__(self, runs, recipe, me_bonuses=None, te_bonuses=None,
-                 install_factors=None):
-        self._product = recipe['products'][0]['name']
-        self._runs = runs
-        self._units_per_run = recipe['products'][0]['quantity']
-        self._me_bonuses = me_bonuses or []
-        self._te_bonuses = te_bonuses or []
-        self._in_factors = install_factors  # dict: system_index, tax_rate
-        self._duration = calc.calc_time(runs, recipe['time'], te_bonuses)
-        self._materials = self._make_bill(recipe, runs, me_bonuses)
-        # TODO TODO TODO
-        self._cost_index = recipe['products'][0]['cost_index']
+    def __init__(self, runs, blueprint, facility, product_value):
+        self.runs = runs
+        self._blueprint = blueprint
+        self.facility = facility
+        self._product_value = product_value
+        # calculate materials required
+        raw_mats = blueprint['materials']
+        mat_bonuses = me_bonuses(blueprint, facility)
+        mats = required_material(raw_mats, mat_bonuses)
+        self.raw_materials, self.final_materials = mats
+        # calculate duration
+        time_bonuses = te_bonuses(blueprint, facility)
+        self.duration = calc.calc_time(runs, blueprint['time'], time_bonuses)
 
     @property
-    def runs(self):
-        return self._runs
+    def product(self):
+        return self._blueprint['products'][0]['name']
 
     @property
-    def duration(self):
-        return self._duration
+    def units_per_run(self):
+        return self._blueprint['products'][0]['quantity']
+
+    @property
+    def install_cost(self):
+        index = self.facility.manufacture_index
+        tax = self.facility.tax_rate
+        return calc.calc_install(self.runs, self._product_value, index, tax)
+
+    @property
+    def cost_per_run(self):
+        return self.total_cost / self.runs
 
     @property
     def cost_per_unit(self):
-        return self.total_cost / self._runs * self._units_per_run
+        return self.cost_per_run() * self.units_per_run
 
     @property
     def total_cost(self):
-        mat_cost = self._materials.total_cost()
-        return mat_cost + calc.calc_install(self._runs, self._cost_index,
-                                            **self._in_factors)
-
-    @staticmethod
-    def _make_bill(recipe, runs, me_bonuses):
-        mats = []
-        for spec in recipe['materials']:
-            mat_id = spec['typeID']
-            mat_name = recipe['materials'][mat_id]['name']
-            qty = calc.calc_mats(runs, spec['quantity'], me_bonuses)
-            cost = recipe['materials'][mat_id]['cost']
-            material = ManufactureMaterial(mat_id, mat_name, qty, cost)
-            mats.append(material)
-        return BillOfMaterials(mats)
+        return self.final_materials.total_cost + self.install_cost
