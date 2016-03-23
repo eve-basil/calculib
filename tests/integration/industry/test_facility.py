@@ -39,11 +39,12 @@ def test_crest_systems():
 
 
 def test_crest_facilities():
-    name = "Jita IV - Moon 10 - Caldari Constructions Production Plant"
+    name = "Jita IV - Moon 4 - Caldari Navy Assembly Plant"
     response = facil.facilities()
-    systems = {n['facilityID']: n for n in response}
-    jita_4_10_ccpp = systems[60002959]
-    assert_that(jita_4_10_ccpp['solarSystem']['id'], equal_to(30000142))
-    assert_that(jita_4_10_ccpp['tax'], equal_to(0.1))
-    assert_that(jita_4_10_ccpp['owner']['id'], equal_to(1000026))
-    assert_that(jita_4_10_ccpp['name'], equal_to(name))
+    stations = {n['facilityID']: n for n in response}
+    assert_that(stations, has_key(60003760))
+    station = stations[60003760]
+    assert_that(station['solarSystem']['id'], equal_to(30000142))
+    assert_that(station['tax'], equal_to(0.1))
+    assert_that(station['owner']['id'], equal_to(1000035))
+    assert_that(station['name'], equal_to(name))
