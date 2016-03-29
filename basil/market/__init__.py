@@ -3,6 +3,7 @@ import os
 import requests
 
 from basil_common import caching
+from basil import ENGINE
 
 HEADERS = {'user-agent': 'github.com/eve-basil/calculib[0.1.0-dev]'}
 # TODO integration tests for all of these
@@ -18,8 +19,8 @@ def values():
     def value_provider():
         return requests.get(url, headers=HEADERS).json()
 
-    if caching.ENGINE:
-        cache = caching.FactCache(caching.ENGINE, 'crest/', 900,
+    if ENGINE:
+        cache = caching.FactCache(ENGINE, 'crest/', 900,
                                   value_provider)
 
     def values_cache(type_id):

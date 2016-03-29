@@ -1,6 +1,7 @@
 import requests
 
 import basil_common.caching as cache
+from basil import ENGINE
 
 
 def facilities():
@@ -18,8 +19,8 @@ def _items_from_url(url):
     return requests.get(url, headers=headers).json()['items']
 
 
-FAC_CACHE = cache.FactCache(cache.ENGINE, 'fac', facilities)
-SYS_CACHE = cache.FactCache(cache.ENGINE, 'sys', systems)
+FAC_CACHE = cache.FactCache(ENGINE, 'fac', facilities)
+SYS_CACHE = cache.FactCache(ENGINE, 'sys', systems)
 
 
 def facility(facility_id=None, **kwargs):
@@ -38,7 +39,7 @@ def facility(facility_id=None, **kwargs):
     global SYS_CACHE
 
     def _facility_from_id(**ikwargs):
-        fac = FAC_CACHE[facility_id]
+        fac = FAC_CACHE.get(facility_id)
         system = SYS_CACHE.get(fac['solarSystem']['id'])
         if 'tax' in fac and fac['tax'] == 0.1:
             return NPCStation(fac['name'], system)
