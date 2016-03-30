@@ -20,8 +20,8 @@ def values():
         return requests.get(url, headers=HEADERS).json()
 
     if ENGINE:
-        cache = caching.FactCache(ENGINE, 'crest/', 900,
-                                  value_provider)
+        cache = caching.FactCache(ENGINE, 'crest/', timeout_seconds=900,
+                                  loader=value_provider)
 
     def values_cache(type_id):
         return avg_from(cache.get('market/prices/'), type_id)

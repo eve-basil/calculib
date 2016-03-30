@@ -19,8 +19,8 @@ def _items_from_url(url):
     return requests.get(url, headers=headers).json()['items']
 
 
-FAC_CACHE = cache.FactCache(ENGINE, 'fac', facilities)
-SYS_CACHE = cache.FactCache(ENGINE, 'sys', systems)
+FAC_CACHE = cache.FactCache(ENGINE, 'fac', loader=facilities)
+SYS_CACHE = cache.FactCache(ENGINE, 'sys', loader=systems)
 
 
 def facility(facility_id=None, **kwargs):
