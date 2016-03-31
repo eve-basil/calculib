@@ -1,3 +1,6 @@
+class IndustryException(Exception):
+    pass
+
 decryptors = [{id: 123456, 'name': 'Accelerant', 'runs': 1, 'me': 2, 'te': 10,
                'chance': 20},
               {id: 123456, 'name': 'Attainment', 'runs': 4, 'me': -1, 'te': 4,

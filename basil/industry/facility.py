@@ -6,12 +6,12 @@ from basil import ENGINE
 
 def facilities():
     url = 'https://public-crest.eveonline.com/industry/facilities/'
-    return _items_from_url(url)
+    return {n['facilityID']: n for n in _items_from_url(url)}
 
 
 def systems():
     url = 'https://public-crest.eveonline.com/industry/systems/'
-    return _items_from_url(url)
+    return {n['solarSystem']['id']: n for n in _items_from_url(url)}
 
 
 def _items_from_url(url):
@@ -19,8 +19,8 @@ def _items_from_url(url):
     return requests.get(url, headers=headers).json()['items']
 
 
-FAC_CACHE = cache.FactCache(ENGINE, 'fac', loader=facilities)
-SYS_CACHE = cache.FactCache(ENGINE, 'sys', loader=systems)
+FAC_CACHE = cache.FactCache(ENGINE, 'crest/ind/fac/', loader=facilities)
+SYS_CACHE = cache.FactCache(ENGINE, 'crest/ind/sys/', loader=systems)
 
 
 def facility(facility_id=None, **kwargs):
@@ -35,12 +35,9 @@ def facility(facility_id=None, **kwargs):
     :param kwargs: other args used to define the facility
     :return: an IndustrialFacility
     """
-    global FAC_CACHE
-    global SYS_CACHE
-
     def _facility_from_id(**ikwargs):
-        fac = FAC_CACHE.get(facility_id)
-        system = SYS_CACHE.get(fac['solarSystem']['id'])
+        fac = FAC_CACHE.get(facility_id, blocking=True)
+        system = SYS_CACHE.get(fac['solarSystem']['id'], blocking=True)
         if 'tax' in fac and fac['tax'] == 0.1:
             return NPCStation(fac['name'], system)
         else:
@@ -55,7 +52,7 @@ def facility(facility_id=None, **kwargs):
     def _facility_from_dict(**ikwargs):
 
         structure = globals()[ikwargs.pop('structure')]
-        system = SYS_CACHE.get(ikwargs.pop('solar_system_id'))
+        system = SYS_CACHE.get(ikwargs.pop('solar_system_id'), blocking=True)
         params = {'solar_system': system}
         for p in _constructor_params(structure):
             if p not in params:

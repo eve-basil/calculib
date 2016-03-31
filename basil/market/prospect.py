@@ -2,6 +2,7 @@ from operator import attrgetter
 
 import basil.market as market
 import basil.industry.manufacturing as imat
+from basil.industry import IndustryException
 
 
 def prospect(blueprint, facilities, runs=1):
@@ -13,14 +14,17 @@ def prospect(blueprint, facilities, runs=1):
     :return: a list of Prospects, sorted from in order of decreasing profit
     """
     product = blueprint['products'][0]['typeID']
+    product_price = market.PRICES_FUNC(product, blueprint['typeName'][:-10])
+    if not product_price:
+        raise IndustryException()
     product_value = market.VALUES_FUNC(product)
-    sell = market.PRICES_FUNC(product)
-    blueprint['products'][0]['name'] = market.NAMES_FUNC(product)
+    if not product_value:
+        raise IndustryException()
 
     prospects = []
     for fac in facilities:
         job = imat.ManufactureJob(runs, blueprint, fac, product_value)
-        prospects.append(Prospect(job, sell))
+        prospects.append(Prospect(job, product_price['sell']['min']))
     return sorted(prospects, key=attrgetter('cost_per_unit'))
 
 

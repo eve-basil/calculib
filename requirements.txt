@@ -1,4 +1,4 @@
+backports.functools-lru-cache==1.2.1
 basil_common==0.1.0.dev
 redis==2.10.5
 requests==2.9.1
-

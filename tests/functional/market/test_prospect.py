@@ -84,7 +84,7 @@ def prices():
                     "recorded_at": "2006-01-19T07:37:25Z", "id": 24701},
             }
 
-    def get_price(key):
+    def get_price(key, name):
         return data[key]
 
     return get_price

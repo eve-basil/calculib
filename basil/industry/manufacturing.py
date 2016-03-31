@@ -2,6 +2,7 @@ import operator
 
 from basil.calculator import manufacturing as calc
 import basil.market as market
+from basil.industry import IndustryException
 
 
 def me_bonuses(blueprint, facility=None):
@@ -12,7 +13,7 @@ def me_bonuses(blueprint, facility=None):
     :return: a sorted list of modifiers
     """
     # TODO some decryptors will break this, as ME penalties are filtered out
-    bonuses = [blueprint['me']]
+    bonuses = [blueprint['materialEfficiency']]
     if facility:
         bonuses.append(facility.material_bonus)
     return sorted([b for b in bonuses if b > 0], reverse=True)
@@ -27,7 +28,7 @@ def te_bonuses(blueprint, facility=None, builder=None):
     :return: a sorted list of modifiers
     """
     # TODO some decryptors may break this, as TE penalties are filtered out
-    bonuses = [blueprint['te']]
+    bonuses = [blueprint['timeEfficiency']]
     if facility:
         bonuses.append(facility.time_bonus)
     if builder:
@@ -48,12 +49,15 @@ def required_material(raw_mats, bonuses):
     init_mats = []
     for m in raw_mats:
         mat_name = market.NAMES_FUNC(m['typeID'])
-        mat_price = market.PRICES_FUNC(m['typeID'])['sell']['min']
+        mat_prices = market.PRICES_FUNC(m['typeID'], mat_name)
+        if not mat_prices:
+            raise IndustryException("No price found for %s" % mat_name)
+        price = mat_prices['sell']['min']
         qty_used = calc.calc_mats(1, m['quantity'], bonuses)
-        final_mats.append(ManufactureMaterial(m['typeID'], mat_name,
-                                              qty_used, mat_price))
+        final_mats.append(ManufactureMaterial(m['typeID'], mat_name, qty_used,
+                                              price))
         init_mats.append(ManufactureMaterial(m['typeID'], mat_name,
-                                             m['quantity'], mat_price))
+                                             m['quantity'], price))
     return BillOfMaterials(init_mats), BillOfMaterials(final_mats)
 
 
@@ -139,7 +143,7 @@ class ManufactureJob(object):
 
     @property
     def product(self):
-        return self._blueprint['products'][0]['name']
+        return self._blueprint['typeName'][:-10]
 
     @property
     def units_per_run(self):

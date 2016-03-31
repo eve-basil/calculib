@@ -114,12 +114,21 @@ class MockCaches(object):
     def __enter__(self):
         self._orig_fac_cache = f.FAC_CACHE
         self._orig_sys_cache = f.SYS_CACHE
-        f.FAC_CACHE = self._cache
-        f.SYS_CACHE = self._cache
+        f.FAC_CACHE = Wrapper(self._cache)
+        f.SYS_CACHE = Wrapper(self._cache)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         f.FAC_CACHE = self._orig_fac_cache
         f.SYS_CACHE = self._orig_sys_cache
+
+
+class Wrapper(object):
+    def __init__(self, dictionary):
+        self._dict = dictionary
+
+    def get(self, key, blocking=False):
+        return self._dict.get(key)
+
 
 ROOT = 'https://public-crest.eveonline.com'
 NPC_FAC = {"facilityID": 60002353,
