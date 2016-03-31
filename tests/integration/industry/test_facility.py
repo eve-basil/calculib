@@ -20,12 +20,12 @@ import basil.industry.facility as facil
 #       "solarSystem": {"id_str": "30011392", "href":
 #           "https://public-crest.eveonline.com/solarsystems/30011392/",
 #                       "id": 30011392, "name": "Jouvulen"}},]
-
 def test_crest_systems():
     response = facil.systems()
-    systems = {n['solarSystem']['name']: n for n in response}
+    systems = {n['solarSystem']['name']: n for n in response.values()}
     jita = systems['Jita']
     assert_that(jita['systemCostIndices'][0]['costIndex'], greater_than(0))
+
 
 # Expecting something like
 #     {"facilityID": 60012160,
@@ -36,12 +36,9 @@ def test_crest_systems():
 #      "facilityID_str": "60012160",
 #      "owner": {"id": 1000123, "id_str": "1000123"},
 #      "type": {"id": 2500, "id_str": "2500"}}
-
-
 def test_crest_facilities():
     name = "Jita IV - Moon 4 - Caldari Navy Assembly Plant"
-    response = facil.facilities()
-    stations = {n['facilityID']: n for n in response}
+    stations = facil.facilities()
     assert_that(stations, has_key(60003760))
     station = stations[60003760]
     assert_that(station['solarSystem']['id'], equal_to(30000142))
