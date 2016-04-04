@@ -5,7 +5,7 @@ import basil.industry.manufacturing as imat
 from basil.industry import IndustryException
 
 
-def prospect(blueprint, facilities, runs=1):
+def prospect(blueprint, facilities, runs=1, count=1):
     """Analyze Prospects for an industrial manufacturing job.
 
     :param blueprint: a blueprint to build from
@@ -24,30 +24,43 @@ def prospect(blueprint, facilities, runs=1):
     prospects = []
     for fac in facilities:
         job = imat.ManufactureJob(runs, blueprint, fac, product_value)
-        prospects.append(Prospect(job, product_price['sell']['min']))
+        prospects.append(Prospect(job, product_price['sell']['min'], count))
     return sorted(prospects, key=attrgetter('cost_per_unit'))
 
 
 class Prospect(object):
-    def __init__(self, manufacture_job, sell_price):
-        self._build_job = manufacture_job
+    def __init__(self, manufacture_job, sell_price, count):
+        self.manufacture_job = manufacture_job
         self.price_per_unit = sell_price
+        self.count = count
+
+    @property
+    def product(self):
+        return self.manufacture_job.product
+
+    @property
+    def blueprint_me(self):
+        return self.manufacture_job.blueprint_me
 
     @property
     def facility(self):
-        return self._build_job.facility
+        return self.manufacture_job.facility
 
     @property
     def units_per_run(self):
-        return self._build_job.units_per_run
+        return self.manufacture_job.units_per_run
 
     @property
     def runs(self):
-        return self._build_job.runs
+        return self.manufacture_job.runs
+
+    @property
+    def install_cost(self):
+        return self.manufacture_job.install_cost
 
     @property
     def total_cost(self):
-        return self._build_job.total_cost
+        return self.manufacture_job.total_cost
 
     @property
     def cost_per_unit(self):
@@ -76,3 +89,7 @@ class Prospect(object):
     @property
     def profit_margin(self):
         return 100 * self.total_profit / self.total_cost
+
+    @property
+    def materials(self):
+        return self.manufacture_job.final_materials

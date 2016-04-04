@@ -125,6 +125,10 @@ class BillOfMaterials(object):
         result.append(prev)
         return result
 
+    def as_dict(self):
+        return [{'name': i.name, 'quantity': i.quantity, 'cost': i.cost,
+                 'id': i.id} for i in self]
+
 
 class ManufactureJob(object):
     def __init__(self, runs, blueprint, facility, product_value):
@@ -166,3 +170,7 @@ class ManufactureJob(object):
     @property
     def total_cost(self):
         return self.final_materials.total_cost + self.install_cost
+
+    @property
+    def blueprint_me(self):
+        return self._blueprint['materialEfficiency']
