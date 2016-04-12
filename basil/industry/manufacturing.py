@@ -135,7 +135,7 @@ class ManufactureJob(object):
         self.runs = runs
         self._blueprint = blueprint
         self.facility = facility
-        self._product_value = product_value
+        self.product_value = product_value
         # calculate materials required
         raw_mats = blueprint['materials']
         mat_bonuses = me_bonuses(blueprint, facility)
@@ -157,7 +157,7 @@ class ManufactureJob(object):
     def install_cost(self):
         index = self.facility.manufacture_index
         tax = self.facility.tax_rate
-        return calc.calc_install(self.runs, self._product_value, index, tax)
+        return calc.calc_install(self.runs, self.product_value, index, tax)
 
     @property
     def cost_per_run(self):
