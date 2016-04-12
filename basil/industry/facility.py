@@ -23,6 +23,49 @@ FAC_CACHE = cache.FactCache(ENGINE, 'crest/ind/fac/', loader=facilities)
 SYS_CACHE = cache.FactCache(ENGINE, 'crest/ind/sys/', loader=systems)
 
 
+def fuel(race=None, size=None, faction=None, discount=0):
+    fuels = [{}]
+    if race is not None and size is not None:
+        rate = 0
+        if size.upper().startswith('S'):
+            rate = 10
+        elif size.upper().startswith('M'):
+            rate = 20
+        elif size.upper().startswith('L'):
+            rate = 40
+        rate *= (1 - discount)
+
+        if race.upper().startswith('A'):
+            fuels = [{'id': 4247, 'rate': rate}]
+        elif race.upper().startswith('C'):
+            fuels = [{'id': 4246, 'rate': rate}]
+        elif race.upper().startswith('G'):
+            fuels = [{'id': 4312, 'rate': rate}]
+        elif race.upper().startswith('M'):
+            fuels = [{'id': 4246, 'rate': rate}]
+
+        if faction == 500003:
+            fuels.append({'id': 24592, 'rate': 1})
+        elif faction == 500001:
+            fuels.append({'id': 24593, 'rate': 1})
+        elif faction == 500004:
+            fuels.append({'id': 24594, 'rate': 1})
+        elif faction == 500002:
+            fuels.append({'id': 24595, 'rate': 1})
+        elif faction == 500008:
+            fuels.append({'id': 24596, 'rate': 1})
+        elif faction == 500007:
+            fuels.append({'id': 24597, 'rate': 1})
+
+    return fuels
+
+
+def cost_per_hour(race=None, size=None, faction=None):
+    from basil.market import PRICES_FUNC
+    return sum([PRICES_FUNC(f['id']) * f['rate']
+                for f in fuel(race, size, faction)])
+
+
 def facility(facility_id=None, **kwargs):
     """Provide an IndustrialFacility based on parameters.
 
@@ -72,12 +115,13 @@ def facility(facility_id=None, **kwargs):
 
 class IndustryFacility(object):
     def __init__(self, name, solar_system, tax_rate, material_bonus=0,
-                 time_bonus=0):
+                 time_bonus=0, hourly_cost=0):
         self.name = name
-        self._tax_rate = tax_rate
-        self._solar_system = solar_system
-        self._material_bonus = material_bonus
-        self._time_bonus = time_bonus
+        self.tax_rate = tax_rate
+        self.solar_system = solar_system
+        self.material_bonus = material_bonus
+        self.time_bonus = time_bonus
+        self.hourly_cost = hourly_cost
 
     @property
     def manufacture_index(self):
@@ -106,20 +150,8 @@ class IndustryFacility(object):
 
     def _activity_index(self, activity):
         return next(idx['costIndex']
-                    for idx in self._solar_system['systemCostIndices']
+                    for idx in self.solar_system['systemCostIndices']
                     if idx['activityName'] == activity)
-
-    @property
-    def tax_rate(self):
-        return self._tax_rate
-
-    @property
-    def material_bonus(self):
-        return self._material_bonus
-
-    @property
-    def time_bonus(self):
-        return self._time_bonus
 
     def can_build(self, product):
         return True
@@ -131,9 +163,9 @@ class EquipmentAssemblyArray(IndustryFacility):
     rapid equipment assembly array but at a reduced speed.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(EquipmentAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
     def can_build(self, product):
         return False
@@ -144,9 +176,9 @@ class SmallShipAssemblyArray(IndustryFacility):
     Fighter Bomber Drones, Frigates and Destroyers can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(SmallShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class AdvancedSmallShipAssemblyArray(IndustryFacility):
@@ -155,9 +187,9 @@ class AdvancedSmallShipAssemblyArray(IndustryFacility):
     Interdictors, Stealth Bombers and Tactical Destroyers can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(AdvancedSmallShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class MediumShipAssemblyArray(IndustryFacility):
@@ -165,9 +197,9 @@ class MediumShipAssemblyArray(IndustryFacility):
     and Battlecruisers can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(MediumShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class AdvancedMediumShipAssemblyArray(IndustryFacility):
@@ -176,9 +208,9 @@ class AdvancedMediumShipAssemblyArray(IndustryFacility):
     Interdiction Cruisers and Command Battlecruisers can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(AdvancedMediumShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class LargeShipAssemblyArray(IndustryFacility):
@@ -186,9 +218,9 @@ class LargeShipAssemblyArray(IndustryFacility):
     Freighters and Industrial Command Ships can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(LargeShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class AdvancedLargeShipAssemblyArray(IndustryFacility):
@@ -197,9 +229,9 @@ class AdvancedLargeShipAssemblyArray(IndustryFacility):
     manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(AdvancedLargeShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class CapitalShipAssemblyArray(IndustryFacility):
@@ -208,9 +240,9 @@ class CapitalShipAssemblyArray(IndustryFacility):
     Industrial Ships can be manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(CapitalShipAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class AmmunitionAssemblyArray(IndustryFacility):
@@ -221,9 +253,9 @@ class AmmunitionAssemblyArray(IndustryFacility):
     Fuel Blocks can also be manufactured here.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(AmmunitionAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class DroneAssemblyArray(IndustryFacility):
@@ -231,9 +263,9 @@ class DroneAssemblyArray(IndustryFacility):
     manufactured.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(DroneAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class ComponentAssemblyArray(IndustryFacility):
@@ -244,9 +276,9 @@ class ComponentAssemblyArray(IndustryFacility):
     Fuel Blocks can also be manufactured here.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(ComponentAssemblyArray, self).__init__(
-            name, solar_system, 0, 2, 25)
+            name, solar_system, 0, 2, 25, hourly_cost=hourly_cost)
 
 
 class ThukkerComponentAssemblyArray(IndustryFacility):
@@ -258,9 +290,9 @@ class ThukkerComponentAssemblyArray(IndustryFacility):
     space.
     """
 
-    def __init__(self, name, solar_system):
+    def __init__(self, name, solar_system, hourly_cost=0):
         super(ThukkerComponentAssemblyArray, self).__init__(
-            name, solar_system, 0, 25, 15)
+            name, solar_system, 0, 25, 15, hourly_cost=hourly_cost)
 
 
 class NPCStation(IndustryFacility):

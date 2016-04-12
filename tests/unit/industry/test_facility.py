@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import pytest
+from mock import patch
 
 from tests import *
 
@@ -105,6 +106,33 @@ def test_facility_by_dict_with_name():
                                       equal_to(0.031129044234844177)))
         assert_that(fac, has_property('invention_index',
                                       equal_to(0.07374034740779398)))
+
+
+def test_cost_per_hour_amarr_small_lowsec():
+    with patch('basil.market.PRICES_FUNC', return_value=143.55):
+        cost = f.cost_per_hour('Amarr', 'Small')
+        assert_that(cost, equal_to(1435.5))
+
+
+def test_cost_per_hour_amarr_large_lowsec():
+    with patch('basil.market.PRICES_FUNC', return_value=143.55):
+        cost = f.cost_per_hour('amarr', 'lrg')
+        assert_that(cost, equal_to(5742.0))
+
+
+def test_cost_per_hour_minnie_medium_lowsec():
+    with patch('basil.market.PRICES_FUNC', return_value=143.55):
+        cost = f.cost_per_hour('minmatar', 'm')
+        assert_that(cost, equal_to(2871.0))
+
+
+def test_cost_per_hour_cal_med_in_gal_hisec():
+    def mock_price_func(key):
+        return {4246: 4000.5, 24594: 1111.1}.get(key)
+
+    with patch('basil.market.PRICES_FUNC', side_effect=mock_price_func):
+        cost = f.cost_per_hour('Cal', 'M', 500004)
+        assert_that(cost, equal_to(81121.1))
 
 
 class MockCaches(object):
