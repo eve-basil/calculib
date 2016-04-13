@@ -93,3 +93,7 @@ class Prospect(object):
     @property
     def materials(self):
         return self.manufacture_job.final_materials
+
+    @property
+    def product_value(self):
+        return self.manufacture_job.product_value
