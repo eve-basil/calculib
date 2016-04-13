@@ -46,7 +46,7 @@ def values():
 
     def values_cache(type_id):
         found = cache.get(type_id)
-        if 'averagePrice' in found:
+        if found and 'averagePrice' in found:
             return found['averagePrice']
         return None
 
