@@ -91,6 +91,10 @@ class Prospect(object):
         return 100 * self.total_profit / self.total_cost
 
     @property
+    def isk_per_hour(self):
+        return self.profit_per_run / self.manufacture_job.time_per_run
+
+    @property
     def materials(self):
         return self.manufacture_job.final_materials
 

@@ -174,3 +174,7 @@ class ManufactureJob(object):
     @property
     def blueprint_me(self):
         return self._blueprint['materialEfficiency']
+
+    @property
+    def time_per_run(self):
+        return self.duration / self.runs
