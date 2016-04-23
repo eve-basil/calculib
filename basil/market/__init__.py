@@ -42,7 +42,7 @@ def values():
         return {n['type']['id']: n for n in items}
 
     cache = caching.FactCache(ENGINE, 'crest/mkt/price/', timeout_seconds=900,
-                              loader=value_provider)
+                              loader=value_provider, debug=True)
 
     def values_cache(type_id):
         found = cache.get(type_id)
