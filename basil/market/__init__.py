@@ -107,7 +107,7 @@ def watches():
 
 
 def crest_base_url():
-    return os.getenv('CREST_URL', "https://public-crest.eveonline.com/")
+    return os.getenv('CREST_URL', "https://crest-tq.eveonline.com/")
 
 
 VALUES_FUNC = values()

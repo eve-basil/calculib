@@ -5,12 +5,12 @@ from basil import ENGINE
 
 
 def facilities():
-    url = 'https://public-crest.eveonline.com/industry/facilities/'
+    url = 'https://crest-tq.eveonline.com/industry/facilities/'
     return {n['facilityID']: n for n in _items_from_url(url)}
 
 
 def systems():
-    url = 'https://public-crest.eveonline.com/industry/systems/'
+    url = 'https://crest-tq.eveonline.com/industry/systems/'
     return {n['solarSystem']['id']: n for n in _items_from_url(url)}
 
 
@@ -80,6 +80,8 @@ def facility(facility_id=None, **kwargs):
     """
     def _facility_from_id(**ikwargs):
         fac = FAC_CACHE.get(facility_id, blocking=True)
+        if not fac:
+            raise ValueError('Got None from FAC_CACHE!')
         system = SYS_CACHE.get(fac['solarSystem']['id'], blocking=True)
         if 'tax' in fac and fac['tax'] == 0.1:
             return NPCStation(fac['name'], system)
